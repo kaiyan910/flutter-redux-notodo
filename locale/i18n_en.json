@@ -1,0 +1,12 @@
+{
+  "title": "NotoDo",
+  "created_at": "Created At:",
+  "removed": "removed",
+  "update_item": "Update Item",
+  "title_hint": "not to...",
+  "title_empty": "Please enter some text",
+  "cancel": "Cancel",
+  "update": "Update",
+  "add": "Add",
+  "empty_item": "It is empty! Add something now."
+}
