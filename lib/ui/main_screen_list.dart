@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:notodo/locale/translations.dart';
 import 'package:notodo/models/item.dart';
+import 'package:notodo/typedef/typedef.dart';
 import 'package:intl/intl.dart';
-
-typedef RemoveCallback = void Function(int position, Item item);
-typedef EditCallback = void Function(int position, Item item);
 
 class MainScreenList extends StatelessWidget {
 
   final List itemList;
-  final RemoveCallback removeCallback;
-  final EditCallback editCallback;
+  final OnItemRemove removeCallback;
+  final OnItemEdit editCallback;
 
   MainScreenList(this.itemList, {this.removeCallback, this.editCallback});
 

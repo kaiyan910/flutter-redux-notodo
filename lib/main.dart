@@ -4,7 +4,13 @@ import 'package:notodo/locale/applic.dart';
 import 'package:notodo/locale/specific_localization_delegate.dart';
 import 'package:notodo/locale/translations.dart';
 import 'package:notodo/locale/translations_delegate.dart';
+import 'package:redux/redux.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:notodo/redux/reducers/app_reducer.dart';
+import 'package:notodo/redux/app_state.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:redux_thunk/redux_thunk.dart';
+import 'package:redux_logging/redux_logging.dart';
 
 import 'ui/main_screen.dart';
 
@@ -16,6 +22,16 @@ class NotoDoApp extends StatefulWidget {
 }
 
 class _NotoDoAppState extends State<NotoDoApp> {
+
+  final Store<AppState> _store = Store<AppState>(
+    appReducer,
+    initialState: AppState.init(),
+    middleware: [
+      new LoggingMiddleware(),
+      thunkMiddleware,
+    ],
+  );
+
   SpecificLocalizationDelegate _localeOverrideDelegate;
   APPLIC _applic = new APPLIC();
 
@@ -48,23 +64,27 @@ class _NotoDoAppState extends State<NotoDoApp> {
 
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      onGenerateTitle: (context) => Translations.of(context).text('title'),
-      home: MainScreen(),
-      localizationsDelegates: [
-        _localeOverrideDelegate,
-        TranslationsDelegate(),
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ],
-      supportedLocales: _applic.supportedLocales(),
-      theme: ThemeData(
+
+    return new StoreProvider<AppState>(
+      store: _store,
+      child: new MaterialApp(
+        onGenerateTitle: (context) => Translations.of(context).text('title'),
+        home: MainScreen(),
+        localizationsDelegates: [
+          _localeOverrideDelegate,
+          TranslationsDelegate(),
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+          ],
+          supportedLocales: _applic.supportedLocales(),
+          theme: ThemeData(
           brightness: Brightness.dark,
           iconTheme: IconThemeData(color: Colors.black),
           textTheme: TextTheme(title: TextStyle(color: Colors.black)),
           primaryColor: Colors.black,
           accentColor: Colors.greenAccent,
           errorColor: Colors.redAccent[100]),
+        ),
     );
   }
 }

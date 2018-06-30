@@ -1,69 +1,72 @@
 import 'package:flutter/material.dart';
-import 'package:notodo/dao/Item_dao.dart';
 import 'package:notodo/locale/translations.dart';
-import 'package:notodo/models/item.dart';
-import 'package:notodo/ui/add_screen.dart';
+import 'package:notodo/redux/app_state.dart';
 import 'package:notodo/locale/applic.dart';
-import 'package:notodo/utils/database_helper.dart';
+import 'package:notodo/ui/add_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:notodo/redux/actions/item_action.dart';
 
 import 'main_screen_list.dart';
 
 class MainScreen extends StatefulWidget {
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
 
-  DatabaseHelper _databaseHelper = DatabaseHelper();
   APPLIC _applic = new APPLIC();
-  List _itemList;
-
-  @override
-  void initState() {
-    super.initState();
-    _getItems();
-  }
 
   @override
   Widget build(BuildContext context) {
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).accentColor,
-        title: Text(
-          Translations.of(context).text('title'),
-        ),
-        textTheme: Theme.of(context).textTheme,
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(
-              Icons.language,
-              color: Colors.black,
+    return StoreBuilder<AppState>(
+      onInit: (store) => store.dispatch(getItem),
+      builder: (context, store) {
+        return Scaffold(
+          appBar: AppBar(
+            backgroundColor: Theme.of(context).accentColor,
+            title: Text(
+              Translations.of(context).text('title'),
             ),
-            onPressed: _showLanguageBottomSheet,
+            textTheme: Theme.of(context).textTheme,
+            actions: <Widget>[
+              IconButton(
+                icon: Icon(
+                  Icons.language,
+                  color: Colors.black,
+                ),
+                onPressed: _showLanguageBottomSheet,
+              ),
+            ],
           ),
-        ],
-      ),
-      body: Container(
-        color: Colors.black26,
-        padding: new EdgeInsets.all(8.0),
-        child: MainScreenList(
-          _itemList,
-          removeCallback: (position, item) {
-            _deleteItem(position, item.id);
-          },
-          editCallback: (position, item) {
-            _editItem(position, item);
-          }
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Theme.of(context).accentColor,
-        onPressed: _add,
-        child: Icon(Icons.add),
-      ),
+          body: StoreConnector<AppState, List>(
+            converter: (store) => store.state.items,
+            builder: (context, items) {
+              return Container(
+                color: Colors.black26,
+                padding: new EdgeInsets.all(8.0),
+                child: MainScreenList(
+                    items,
+                    removeCallback: (position, item) {
+                      store.dispatch(deleteItem(position, item.id));
+                    },
+                    editCallback: (position, item) {
+                      store.dispatch(editItem(position, item));
+                    }
+                ),
+              );
+            },
+          ),
+          floatingActionButton: FloatingActionButton(
+            backgroundColor: Theme.of(context).accentColor,
+            onPressed: _add,
+            child: Icon(Icons.add),
+          ),
+        );
+      },
     );
   }
 
@@ -125,42 +128,9 @@ class _MainScreenState extends State<MainScreen> {
     preferences.setString('locale', locale);
   }
 
-  _editItem(int position, Item item) async {
-    ItemDao itemDao = await _databaseHelper.itemDao;
-    await itemDao.update(item);
-    setState(() {
-      _itemList.removeAt(position);
-      _itemList.insert(position, item);
-    });
-  }
-
-  _deleteItem(int position, int id) async {
-
-    ItemDao itemDao = await _databaseHelper.itemDao;
-    await itemDao.delete(id);
-
-    setState(() {
-      _itemList.removeAt(position);
-    });
-  }
-
-  _getItems() async {
-
-    ItemDao itemDao = await _databaseHelper.itemDao;
-    List itemList   = await itemDao.all();
-
-    setState(() {
-      _itemList = itemList.map((item) => Item.fromMap(item)).toList();
-    });
-  }
-
   _add() async {
 
     var route = MaterialPageRoute<Map>(builder: (context) => AddScreen());
-    Map results = await Navigator.of(context).push(route);
-
-    if (results != null) {
-      await _getItems();
-    }
+    await Navigator.of(context).push(route);
   }
 }
