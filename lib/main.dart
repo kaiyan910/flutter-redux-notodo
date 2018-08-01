@@ -75,9 +75,9 @@ class _NotoDoAppState extends State<NotoDoApp> {
           TranslationsDelegate(),
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
-          ],
-          supportedLocales: _applic.supportedLocales(),
-          theme: ThemeData(
+        ],
+        supportedLocales: _applic.supportedLocales(),
+        theme: ThemeData(
           brightness: Brightness.dark,
           iconTheme: IconThemeData(color: Colors.black),
           textTheme: TextTheme(title: TextStyle(color: Colors.black)),
